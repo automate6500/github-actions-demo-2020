@@ -1,8 +1,8 @@
 workflow "Lint, Build, Test, Deploy" {
   on = "push"
-  resolves = ["docker://python:3.6"]
+  resolves = ["Lint"]
 }
 
-action "docker://python:3.6" {
-  uses = "docker://python:3.6"
+action "Lint" {
+  uses = "./.github/action-lint"
 }
