@@ -1,9 +1,8 @@
-workflow "API Pipeline" {
+workflow "Lint, Build, Test, Deploy" {
   on = "push"
   resolves = ["docker://python:3.6"]
 }
 
 action "docker://python:3.6" {
-  uses = "docker://python"
-  secrets = ["GITHUB_TOKEN"]
+  uses = "docker://python:3.6"
 }
