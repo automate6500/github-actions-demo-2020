@@ -1,0 +1,5 @@
+Flask
+flake8
+pylint
+pytest
+pytest-flask
