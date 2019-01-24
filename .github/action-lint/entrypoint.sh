@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -xe
 
 echo ">>>>>>>> Update pip and install requirements"
 pip install --quiet --upgrade pip
