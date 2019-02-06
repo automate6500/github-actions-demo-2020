@@ -13,25 +13,30 @@ action "Check" {
 }
 
 action "Build" {
-    uses = "./.github/action-build"
+    needs = "Check"
+    uses  = "./.github/action-build"
 }
 
 action "Deploy Staging" {
-    uses = "./.github/action-deploy"
-    args = "staging"
+    needs = "Build"
+    uses  = "./.github/action-deploy"
+    args  = "staging"
 }
 
 action "Test Staging" {
+    needs = "Deploy Staging"
     uses = "./.github/action-test"
     args = "staging"
 }
 
 action "Deploy Production" {
+    needs = "Test Staging"
     uses = "./.github/action-deploy"
     args = "production"
 }
 
 action "Test Production" {
+    needs = "Deploy Production"
     uses = "./.github/action-test"
     args = "production"
 }
