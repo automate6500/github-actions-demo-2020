@@ -3,9 +3,7 @@ workflow "Pipeline" {
     resolves = ["Check",
                 "Build",
                 "Deploy Staging",
-                "Test Staging",
-                "Deploy Production",
-                "Test Production"]
+                "Deploy Production"]
 }
 
 action "Check" {
