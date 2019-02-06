@@ -1,3 +1,3 @@
 #!/bin/sh -xe
-pip install --upgrade --requirement requirements.txt
+pip install --quiet --upgrade --requirement requirements.txt
 sh -c "./deploy-new-version.sh $*"
