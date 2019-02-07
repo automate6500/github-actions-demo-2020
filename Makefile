@@ -6,6 +6,7 @@ ENV    = staging
 help:
 	@echo "Run make <target> where target is one of the following..."
 	@echo
+	@echo "    pip         - install required libraries"
 	@echo "    lint        - run flake8 and pylint"
 	@echo "    unittest    - run unittests"
 	@echo "    build       - build docker container"
@@ -22,6 +23,8 @@ help:
 	@echo "    test ENV=prodiction   - run ./test-environment.sh production"
 	@echo
 	@echo "FYI, Current tag is $(TAG)"
+pip:
+	pip install --quiet --upgrade --requirement requirements.txt
 
 lint:
 	flake8 --ignore=E501,E231 *.py tests/*.py
@@ -53,4 +56,4 @@ clean:
 	@rm -rf ./__pycache__ ./tests/__pycache__
 	@rm -f .*~ *.pyc
 
-.PHONY: build clean deploy help interactive lint run test unittest upload
+.PHONY: build clean deploy help interactive lint pip run test unittest upload
