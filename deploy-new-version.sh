@@ -11,7 +11,7 @@ tag=$(date +%F)-$(git rev-parse --short HEAD)
 ##############################################################################
 # REMOVE THE LINES BELOW AND CUSTOMIZE THE SCRIPT FOR YOUR DEPLOYMENT
 echo #########################################################################
-echo "DEPLOYMENT SCRIPT NEEDS TO BE CUSTOMIZED"
+echo "SCRIPT NEEDS TO BE CUSTOMIZED"
 echo #########################################################################
 exit 0
 # REMOVE THE LINES ABOVE AND CUSTOMIZE THE SCRIPT FOR YOUR DEPLOYMENT
@@ -72,7 +72,7 @@ then
 else
     echo
     echo ----
-    echo "Deployment completed successfully! :D"
+    echo "completed successfully! :D"
     echo "application-name ${application}"
     echo "environment-name ${environment}"
     echo "version-label    ${tag}"
