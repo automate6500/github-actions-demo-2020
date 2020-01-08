@@ -27,7 +27,7 @@ jobs:
           args: "staging"
   deploy-production:
     runs-on: ubuntu-latest
-    needs: [build]
+    needs: [deploy-staging]
     steps:
       - uses: actions/checkout@v2
       - name: deploy
