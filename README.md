@@ -1,5 +1,5 @@
 
-## refs
+## References
 - [Variables](https://docs.github.com/en/actions/learn-github-actions/variables)
 - [Pricing for GitHub Actions](https://docs.github.com/en/billing/managing-billing-for-github-actions/about-billing-for-github-actions)
 
