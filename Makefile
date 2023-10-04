@@ -1,59 +1,96 @@
-APP    = target-app
-SCOPE  = user99
-TAG    = $(shell echo "$$(date +%F)-$$(git rev-parse --short HEAD)")
-ENV    = staging
+FUNCTION=undefined
+PLATFORM=undefined
+URL=undefined
+VERSION=undefined
+BUILD_NUMBER=undefined
+CODE=$(shell ls *.py)
 
-help:
-	@echo "Run make <target> where target is one of the following..."
+ifneq (,$(findstring -staging,$(FUNCTION)))
+	ENVIRONMENT = STAGING
+else ifneq (,$(findstring -production,$(FUNCTION)))
+	ENVIRONMENT = PRODUCTION
+else
+	ENVIRONMENT = undefined
+endif
+
+hello:
+	@echo "Here are the targets for this Makefile:"
+	@echo "  requirements   - install the project requirements"
+	@echo "  lint           - run linters on the code"
+	@echo "  black          - run black to format the code"
+	@echo "  test           - run the tests"
+	@echo "  build          - build the lambda.zip file"
+	@echo "  deploy         - deploy the lambda.zip file to AWS"
+	@echo "  testdeployment - test the deployment"
+	@echo "  clean          - remove the lambda.zip file"
+	@echo "  all            - clean, lint, black, test, build, and deploy"
 	@echo
-	@echo "    pip         - install required libraries"
-	@echo "    lint        - run flake8 and pylint"
-	@echo "    unittest    - run unittests"
-	@echo "    build       - build docker container"
-	@echo "    run         - run containter on host port 5000"
-	@echo "    interactive - run container interactively on host port 5000"
-	@echo "    upload      - run ./upload-new-version.sh"
-	@echo "    deploy      - run ./deploy-new-version.sh staging"
-	@echo "    test        - run ./test-environment.sh staging"
-	@echo "    clean       - stop local container, clean up workspace"
 	@echo
-	@echo "For the production environment...."
+	@echo "You must set the FUNCTION variables to use the deploy target."
+	@echo "FUNCTION must be set to the name of an existing lambda function to update."
+	@echo "For example:"
 	@echo
-	@echo "    deploy ENV=production - run ./deploy-new-version.sh production"
-	@echo "    test ENV=prodiction   - run ./test-environment.sh production"
+	@echo "  make deploy FUNCTION=sample-application-staging"
 	@echo
-	@echo "FYI, Current tag is $(TAG)"
-pip:
-	pip install --quiet --upgrade --requirement requirements.txt
+	@echo "Optional deploy variables are:"
+	@echo "  VERSION       - the version of the code being deployed (default: undefined)"
+	@echo "  PLATFORM      - the platform being used for the deployment (default: undefined)"
+	@echo "  BUILD_NUMBER  - the build number assigned by the deployment platform (default: undefined)"
+	@echo "  URL           - the URL to use for testing the deployment (default: undefined)"
+	@echo
+
+requirements:
+	pip install -U pip
+	pip install --requirement requirements.txt
+
+check:
+	set
+	zip --version
+	python --version
+	pylint --version
+	flake8 --version
+	aws --version
 
 lint:
-	flake8 --ignore=E501,E231 *.py tests/*.py
-	pylint --errors-only --disable=C0301 --disable=C0326 *.py tests/*.py
+	pylint --exit-zero --errors-only --disable=C0301 --disable=C0326 --disable=R,C $(CODE)
+	flake8 --exit-zero --ignore=E501,E231 $(CODE)
 
-unittest: lint
-	python -m unittest --verbose --failfast
 
-build: unittest
-	docker build -t $(SCOPE)/$(APP):$(TAG) .
-
-run:
-	docker run --rm -d -p 5000:5000 --name $(APP) $(SCOPE)/$(APP):$(TAG)
-
-interactive:
-	docker run --rm -it -p 5000:5000 --name $(APP) $(SCOPE)/$(APP):$(TAG)
-
-upload: unittest
-	./upload-new-version.sh
+black:
+	black --diff $(CODE)
 
 test:
-	./test-environment.sh $(ENV)
+	python -m unittest -v index_test
 
-deploy: upload
-	./deploy-new-version.sh $(ENV)
+build:
+	zip lambda.zip index.py data.json template.html
+
+deploy:
+	aws sts get-caller-identity
+
+	aws lambda wait function-active \
+		--function-name="$(FUNCTION)"
+
+	aws lambda update-function-configuration \
+		--function-name="$(FUNCTION)" \
+		--environment "Variables={PLATFORM=$(PLATFORM),VERSION=$(VERSION),BUILD_NUMBER=$(BUILD_NUMBER),ENVIRONMENT=$(ENVIRONMENT)}"
+
+	aws lambda wait function-updated \
+		--function-name="$(FUNCTION)"
+
+	aws lambda update-function-code \
+		--function-name="$(FUNCTION)" \
+	 	--zip-file=fileb://lambda.zip
+
+	aws lambda wait function-updated \
+		--function-name="$(FUNCTION)"
+
+testdeployment:
+	curl -s $(URL) | grep $(VERSION)
 
 clean:
-	docker container stop $(APP) || true
-	@rm -rf ./__pycache__ ./tests/__pycache__
-	@rm -f .*~ *.pyc
+	rm -vf lambda.zip
 
-.PHONY: build clean deploy help interactive lint pip run test unittest upload
+all: clean lint black test build deploy
+
+.PHONY: test build deploy all clean

@@ -1,7 +1,4 @@
-Flask
-awscli
-flake8
-pip
+black
 pylint
-pytest
-pytest-flask
+flake8
+awscli
